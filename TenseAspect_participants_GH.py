@@ -33,6 +33,11 @@ df.dtypes
 # changing 'Participant' column from integer to object
 df.Participant = df.Participant.astype(object)
 
+# Renaming columns
+# AJT 100 -> AJTP and Cloze test 100 into Cloze test P
+df.rename(columns={"AJT 100": "AJTP", "Cloze test 100": "ClozeP", "Cloze test w PS": "ClozewPS", "Cloze test": "ClozeTest"}, inplace=True)
+
+
 ## Descriptives
 # calculating descriptives for all columns
 df.describe()
@@ -41,65 +46,15 @@ descriptives = df.groupby('Group').describe()
 # calculating only means for all columns per Group
 mean = df.groupby('Group').mean()
 
-## Significance testing
-# Using ANOVA to test significane between groups for:
-# LexTALE - proficiency test in English
-mod = ols('LexTALE ~ Group', data=df).fit()
-LextTALE_ANOVA = sm.stats.anova_lm(mod, typ=2)
-print(LextTALE_ANOVA)
-# CFT - category fluency task for proficiency in English
-mod = ols('CFT ~ Group', data=df).fit()
-CFT_ANOVA = sm.stats.anova_lm(mod, typ=2)
-print(CFT_ANOVA)
-# Age of the participants
-mod = ols('Age ~ Group', data=df).fit()
-Age_ANOVA = sm.stats.anova_lm(mod, typ=2)
-print(Age_ANOVA)
-# Age of Acquisition of participants
-mod = ols('AoA ~ Group', data=df).fit()
-AoA_ANOVA = sm.stats.anova_lm(mod, typ=2)
-print(AoA_ANOVA)
-# Years of learning English
-mod = ols('Years ~ Group', data=df).fit()
-Years_ANOVA = sm.stats.anova_lm(mod, typ=2)
-print(Years_ANOVA)
-# AJT - Acceptability judgement task 
-# i.e., testing participants' knowledge of Present Perfect and Past Simple
-mod = ols('AJT ~ Group', data=df).fit()
-AJT_ANOVA = sm.stats.anova_lm(mod, typ=2)
-print(AJT_ANOVA)
-
-# Renaming columns
-# AJT 100 -> AJTP and Cloze test 100 into Cloze test P
-df.rename(columns={"AJT 100": "AJTP", "Cloze test 100": "ClozeP", "Cloze test w PS": "ClozewPS", "Cloze test": "ClozeTest"}, inplace=True)
-
-# AJT in percentage
-mod = ols('AJTP ~ Group', data=df).fit()
-AJTP_ANOVA = sm.stats.anova_lm(mod, typ=2)
-print(AJTP_ANOVA)
-# Cloze test - testing participants' knowledge of Past Simple and Present Perfect
-mod = ols('ClozeTest ~ Group', data=df).fit()
-Clozetest_ANOVA = sm.stats.anova_lm(mod, typ=2)
-print(Clozetest_ANOVA)
-# Cloze test for tense and aspect in percentage
-mod = ols('ClozeP ~ Group', data=df).fit()
-ClozeP_ANOVA = sm.stats.anova_lm(mod, typ=2)
-print(ClozeP_ANOVA)
-# Cloze test without Present Simple
-mod = ols('ClozewPS ~ Group', data=df).fit()
-ClozetestwPS_ANOVA = sm.stats.anova_lm(mod, typ=2)
-print(ClozetestwPS_ANOVA)
-# Cloze test without Present Simple in %
-mod = ols('ClozePS100 ~ Group', data=df).fit()
-ClozetestwPS_ANOVA = sm.stats.anova_lm(mod, typ=2)
-print(ClozetestwPS_ANOVA)
-
-
 ## Testing normality of the data for significant results
 # using the Shapiro–Wilk test for normal distribution testing
 LexTALE_N = stats.shapiro(df['LexTALE'])
+CFT_N = stats.shapiro(df['CFT'])
 Age_N = stats.shapiro(df['Age'])
 AoA_N = stats.shapiro(df['AoA'])
+Years_N = stats.shapiro(df['Years'])
+AJT_N = stats.shapiro(df['AJT'])
+AJT100_N = stats.shapiro(df['AJTP'])
 ClozeTest_N = stats.shapiro(df['ClozeTest'])
 ClozeP_N = stats.shapiro(df['ClozeP'])
 ClozewPS_N = stats.shapiro(df['ClozewPS'])
@@ -109,6 +64,35 @@ ClozewPSP_N = stats.shapiro(df['ClozePS100'])
 S = df[df.Group == 'Spanish']
 C = df[df.Group == 'Croatian']
 G = df[df.Group == 'German']
+
+## Significance testing
+# Using ANOVA and Kruskal-Willis tests (where appropriate) to test significane between groups for:
+# LexTALE - proficiency test in English
+stats.kruskal(G['LexTALE'], C['LexTALE'], S['LexTALE'])
+# CFT - category fluency task for proficiency in English
+mod = ols('CFT ~ Group', data=df).fit()
+CFT_ANOVA = sm.stats.anova_lm(mod, typ=2)
+print(CFT_ANOVA)
+# Age of the participants
+stats.kruskal(G['Age'], C['Age'], S['Age'])
+# Age of Acquisition of participants
+stats.kruskal(G['AoA'], C['AoA'], S['AoA'])
+# Years of learning English
+stats.kruskal(G['Years'], C['Years'], S['Years'])
+# AJT - Acceptability judgement task 
+# i.e., testing participants' knowledge of Present Perfect and Past Simple
+stats.kruskal(G['AJT'], C['AJT'], S['AJT'])
+# AJT in percentage
+stats.kruskal(G['AJTP'], C['AJTP'], S['AJTP'])
+# Cloze test - testing participants' knowledge of Past Simple and Present Perfect
+stats.kruskal(G['ClozeTest'], C['ClozeTest'], S['ClozeTest'])
+# Cloze test for tense and aspect in percentage
+stats.kruskal(G['ClozeP'], C['ClozeP'], S['ClozeP'])
+# Cloze test without Present Simple
+stats.kruskal(G['ClozewPS'], C['ClozewPS'], S['ClozewPS'])
+# Cloze test without Present Simple in %
+stats.kruskal(G['ClozePS100'], C['ClozePS100'], S['ClozePS100'])
+
 
 ## Significance testing between each Group pair
 # in order to find out where the difference is
